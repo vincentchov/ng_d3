@@ -34,13 +34,13 @@ app.controller("MainCtrl", [
       _.forEach(dataset, function(item) {
         if (~types.indexOf(item.type)) {
           const thisChild = _.find(parentObj.children, { category: item.type });
-          thisChild.count++;
+          thisChild.count += 1;
 
           if (~rootCauses[item.type].indexOf(item.root_cause)) {
             const thisGrandchild = _.find(thisChild.children, {
               category: item.root_cause
             });
-            thisGrandchild.count++;
+            thisGrandchild.count += 1;
           } else {
             rootCauses[item.type].push(item.root_cause);
             thisChild.children.push({
@@ -87,7 +87,7 @@ app.directive("collapsibleTree", [
   "$window",
   "$filter",
   function($window, $filter) {
-    const link = function(scope, elem, attrs, controller) {
+    const linkFn = function(scope, elem, attrs, controller) {
       window.onresize = function() {
         // console.log('window resize event!');
         scope.$apply();
@@ -133,12 +133,6 @@ app.directive("collapsibleTree", [
         .attr("class", "tree-diagram-tooltip fixed")
         .style("opacity", 0);
 
-      const tooltipDiv = d3
-        .select("body")
-        .append("div")
-        .attr("class", "tree-diagram-tooltip")
-        .style("opacity", 0);
-
       root = angular.copy(scope.data);
       root.x0 = height / 2;
       root.y0 = 0;
@@ -169,7 +163,12 @@ app.directive("collapsibleTree", [
 
         // Update the nodes…
         const node = svg.selectAll("g.node").data(nodes, function(d) {
-          return d.id || (d.id = ++i);
+          if (!d.id) {
+            i += 1;
+            d.id = i;
+          }
+
+          return d.id;
         });
 
         // Enter any new nodes at the parent's previous position.
@@ -177,7 +176,7 @@ app.directive("collapsibleTree", [
           .enter()
           .append("g")
           .attr("class", "node")
-          .attr("transform", function(d) {
+          .attr("transform", function() {
             return `translate(${source.y0},${source.x0})`;
           })
           .on("click", click);
@@ -186,22 +185,22 @@ app.directive("collapsibleTree", [
         nodeEnter
           .append("defs")
           .append("pattern")
-          .attr("id", function(d, i) {
+          .attr("id", function(d) {
             return `node_${d.category}`;
           })
-          .attr("height", function(d, i) {
-            return 100 * Math.pow(d.count / totalItems, 0.5);
+          .attr("height", function(d) {
+            return 100 * (d.count / totalItems) ** 0.5;
           })
-          .attr("width", function(d, i) {
-            return 100 * Math.pow(d.count / totalItems, 0.5);
+          .attr("width", function(d) {
+            return 100 * (d.count / totalItems) ** 0.5;
           })
           .attr("x", 0)
           .attr("y", 0)
-          .attr("height", function(d, i) {
-            return 100 * Math.pow(d.count / totalItems, 0.5);
+          .attr("height", function(d) {
+            return 100 * (d.count / totalItems) ** 0.5;
           })
-          .attr("width", function(d, i) {
-            return 100 * Math.pow(d.count / totalItems, 0.5);
+          .attr("width", function(d) {
+            return 100 * (d.count / totalItems) ** 0.5;
           })
           .attr("x", 0)
           .attr("y", 0);
@@ -219,7 +218,6 @@ app.directive("collapsibleTree", [
             );
 
             const radius = +this.getAttribute("r");
-            const tempRad = theLargerOf(radius, 56);
 
             console.log("circle radius:", radius);
             console.log("tooltip matrix", matrix);
@@ -238,7 +236,7 @@ app.directive("collapsibleTree", [
               .style("top", `${matrix.f - 1.5 * radius}px`)
               .style("width", `${theLargerOf(1.5 * radius, 84)}px`);
           })
-          .on("mouseout", function(d) {
+          .on("mouseout", function() {
             fixedHTMLtooltip
               .transition()
               .duration(500)
@@ -288,13 +286,13 @@ app.directive("collapsibleTree", [
 
         nodeUpdate
           .select("circle")
-          .attr("r", function(d, i) {
-            return 100 * Math.pow(d.count / totalItems, 0.5);
+          .attr("r", function(d) {
+            return 100 * (d.count / totalItems) ** 0.5;
           })
-          .style("fill", function(d, i) {
+          .style("fill", function(d) {
             return `rgb(${150}, ${(d.count / totalItems) * 255}, ${150})`;
           })
-          .style("fill-opacity", function(d, i) {
+          .style("fill-opacity", function(d) {
             return d.value;
           });
 
@@ -305,7 +303,7 @@ app.directive("collapsibleTree", [
           .exit()
           .transition()
           .duration(duration)
-          .attr("transform", function(d) {
+          .attr("transform", function() {
             return `translate(${source.y},${source.x})`;
           })
           .remove();
@@ -324,7 +322,7 @@ app.directive("collapsibleTree", [
           .enter()
           .insert("path", "g")
           .attr("class", "link")
-          .attr("d", function(d) {
+          .attr("d", function() {
             const o = { x: source.x0, y: source.y0 };
             return diagonal({ source: o, target: o });
           });
@@ -340,7 +338,7 @@ app.directive("collapsibleTree", [
           .exit()
           .transition()
           .duration(duration)
-          .attr("d", function(d) {
+          .attr("d", function() {
             const o = { x: source.x, y: source.y };
             return diagonal({ source: o, target: o });
           })
@@ -366,7 +364,7 @@ app.directive("collapsibleTree", [
         update(d);
       }
 
-      function wrap(text, width) {
+      function wrap(text, widthToSet) {
         text.each(function() {
           const text = d3.select(this);
           const words = text
@@ -388,15 +386,16 @@ app.directive("collapsibleTree", [
           while ((word = words.pop())) {
             line.push(word);
             tspan.text(line.join(" "));
-            if (tspan.node().getComputedTextLength() > width) {
+            if (tspan.node().getComputedTextLength() > widthToSet) {
               line.pop();
               tspan.text(line.join(" "));
               line = [word];
+              lineNumber += 1;
               tspan = text
                 .append("tspan")
                 .attr("x", 0)
                 .attr("y", y)
-                .attr("dy", `${++lineNumber * lineHeight + dy}em`)
+                .attr("dy", `${lineNumber * lineHeight + dy}em`)
                 .text(word);
             }
           }
@@ -413,7 +412,7 @@ app.directive("collapsibleTree", [
       scope: {
         data: "="
       },
-      link
+      link: linkFn
     };
   }
 ]);
