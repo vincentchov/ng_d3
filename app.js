@@ -107,7 +107,6 @@ app.directive("collapsibleTree", [
 
       let i = 0;
       const duration = 750;
-      let root;
 
       const formatPct = function(val) {
         return $filter("percentage")(val, 2);
@@ -133,7 +132,7 @@ app.directive("collapsibleTree", [
         .attr("class", "tree-diagram-tooltip fixed")
         .style("opacity", 0);
 
-      root = angular.copy(scope.data);
+      const root = angular.copy(scope.data);
       root.x0 = height / 2;
       root.y0 = 0;
 
@@ -364,8 +363,8 @@ app.directive("collapsibleTree", [
         update(d);
       }
 
-      function wrap(text, widthToSet) {
-        text.each(function() {
+      function wrap(textToWrap, widthToSet) {
+        textToWrap.each(function() {
           const text = d3.select(this);
           const words = text
             .text()
@@ -383,7 +382,9 @@ app.directive("collapsibleTree", [
             .attr("x", 0)
             .attr("y", y)
             .attr("dy", `${dy}em`);
-          while ((word = words.pop())) {
+
+          while (words.length) {
+            word = words.pop();
             line.push(word);
             tspan.text(line.join(" "));
             if (tspan.node().getComputedTextLength() > widthToSet) {
