@@ -1,0 +1,60 @@
+{
+  "category":"Order Shorts",
+  "count": 13,
+  "value": 1.00,
+  "valueType": "Total Fill Rate",
+  "children":[
+    {
+      "category":"User Short",
+      "count": 10,
+      "value": 0.7692,
+      "valueType": "Contributing",
+      "children":[
+        {
+          "category":"Replenishment",
+          "count": 6,
+          "value": 0.6000,
+          "valueType": "Contributing"
+        },
+        {
+          "category":"Invn Accuracy",
+          "count": 3,
+          "value": 0.3000,
+          "valueType": "Contributing"
+        },
+        {
+          "category":"Unknown",
+          "count": 1,
+          "value": 0.1000,
+          "valueType": "Contributing"
+        }
+      ]
+    },
+    {
+      "category":"Allocation Short",
+      "count": 3,
+      "value": 0.2308,
+      "valueType": "Contributing",
+      "children":[
+        {
+          "category":"Receiving",
+          "count": 1,
+          "value": 0.3333,
+          "valueType": "Contributing"
+        },
+        {
+          "category":"Configuration",
+          "count": 1,
+          "value": 0.3333,
+          "valueType": "Contributing"
+        },
+        {
+          "category":"Putaway",
+          "count": 1,
+          "value": 0.3333,
+          "valueType": "Contributing"
+        }
+      ]
+    }
+  ]
+}

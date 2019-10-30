@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html ng-app="plunker">
+
+  <head>
+    <meta charset="utf-8" />
+    <title>Angular-nvD3 Multi Chart</title>
+    <link data-require="fontawesome@4.5.0" data-semver="4.5.0" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.css" />
+    <script data-require="moment.js@2.10.2" data-semver="2.10.2" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.2/moment.min.js"></script>
+    <script data-require="lodash.js@4.6.1" data-semver="4.6.1" src="https://cdn.jsdelivr.net/lodash/4.6.1/lodash.js"></script>
+    <script>document.write('<base href="' + document.location + '" />');</script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <script src="hierarchy.json"></script>
+    <script src="gridButton.js"></script>
+    <script src="app.js"></script>
+    <style>
+
+      .node {
+        cursor: pointer;
+      }
+      
+      .node circle {
+        fill: #fff;
+        stroke: #888;
+        stroke-width: 0.063em;
+      }
+      
+      .node text {
+        font: 1em sans-serif;
+      }
+      
+      .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 0.125em;
+      }
+      
+      div.tree-diagram-tooltip {	
+        position: absolute;			
+        text-align: center;
+        width: 8em;					
+        height: 1.5em;					
+        padding-top: 1%;				
+        font: 1em sans-serif;		
+        background: #555;	
+        color: white;
+        border: 0;		
+        border-radius: 0.25em;			
+        pointer-events: none;			
+      }
+
+    </style>
+  </head>
+
+  <body ng-controller="MainCtrl as main">
+    <div ng-if="main.diagramData">
+      <collapsible-tree data="main.diagramData"></collapsible-tree>
+    </div>
+  </body>
+
+</html>
