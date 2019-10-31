@@ -1,15 +1,20 @@
 {
-  "extends": ["airbnb", "prettier"],
-  "plugins": ["prettier"],
-  "rules": {
-    "prettier/prettier": ["error"],
-    "no-underscore-dangle": "off",
-    "no-param-reassign": "off"
-  },
-  "globals": {
-    "angular": "readonly",
-    "d3": "readonly",
-    "window": "readonly",
-    "_": "readonly"
-  }
+    "extends": ["airbnb", "prettier"],
+    "plugins": ["prettier"],
+    "rules": {
+        "prettier/prettier": ["error"],
+        "object-shorthand": ["warn", "consistent"],
+        "no-plusplus": ["warn", { "allowForLoopAfterthoughts": true }],
+        "func-names": ["off"],
+    },
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "jasmine": true,
+        "es6": true
+    },
+    "globals": {
+        "angular": "readonly",
+        "d3": "readonly"
+    }
 }
