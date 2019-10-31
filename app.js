@@ -1,9 +1,9 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-console */
 /* eslint-disable func-names */
-const app = angular.module("plunker", []);
+const app = angular.module("D3Angular", []);
 
-app.controller("MainCtrl", [
+angular.module("D3Angular").controller("MainCtrl", [
   "$scope",
   "$http",
   function($scope, $http) {
@@ -83,7 +83,7 @@ app.controller("MainCtrl", [
   }
 ]);
 
-app.directive("collapsibleTree", [
+angular.module("D3Angular").directive("collapsibleTree", [
   "$window",
   "$filter",
   function($window, $filter) {
@@ -418,7 +418,7 @@ app.directive("collapsibleTree", [
   }
 ]);
 
-app.filter("percentage", [
+angular.module("D3Angular").filter("percentage", [
   "$filter",
   function($filter) {
     return function(input, decimals) {
