@@ -9,25 +9,32 @@ angular.module("D3Angular").controller("MainCtrl", [
     "$scope",
     "$http",
     function($scope, $http) {
-        const ctrl = this;
-        ctrl.foo = "bar!";
-        $http.get("hierarchy.json").then(function success(data) {
-            console.log(data);
-            ctrl.diagramData = data.data;
-        });
-
-        let currGridKey = "";
-
-        $scope.$on("child directive change grid data", function(event, args) {
-            console.log("parent controller heard directive broadcast!");
-            console.log("chart sent data with broadcast:", args.data);
-            if (currGridKey === args.data) {
-                console.log("no grid change!");
-            } else {
-                currGridKey = args.data;
-                console.log("GRID CHANGE!", currGridKey);
+        this.diagramData = [
+            {
+                name: "Top Level",
+                parent: "null",
+                children: [
+                    {
+                        name: "Level 2: A",
+                        parent: "Top Level",
+                        children: [
+                            {
+                                name: "Son of A",
+                                parent: "Level 2: A"
+                            },
+                            {
+                                name: "Daughter of A",
+                                parent: "Level 2: A"
+                            }
+                        ]
+                    },
+                    {
+                        name: "Level 2: B",
+                        parent: "Top Level"
+                    }
+                ]
             }
-        });
+        ];
     }
 ]);
 
@@ -44,13 +51,12 @@ class D3Tree {
 
         this.newestNodeId = 0;
         this.animationDuration = 750;
-        this.totalItems = this.$scope.data.count;
 
         this.treeVisual = d3.layout
             .tree()
             .size([this.dimensions.height, this.dimensions.width]);
 
-        this.svg = d3
+        this.svgContainer = d3
             .select("body")
             .append("svg")
             .attr(
@@ -76,41 +82,57 @@ class D3Tree {
         this.drawDiagonal = d3.svg.diagonal().projection(d => [d.y, d.x]);
 
         // eslint-disable-next-line prefer-destructuring
-        this.root = angular.copy(treeData);
+        this.root = angular.copy(treeData[0]);
         this.root.prevX = this.dimensions.height / 2;
         this.root.prevY = 0;
 
-        d3.select(window.self.frameElement).style("height", "800px");
+        d3.select(window.self.frameElement).style("height", "500px");
     }
 
     updateNodes(nodes, source) {
-        // Update the nodes…
-        const node = this.svg.selectAll("g.node").data(nodes, d => {
-            if (!d.id) {
-                this.newestNodeId += 1;
-                d.id = this.newestNodeId;
-            }
+        const nodeSelector = this.svgContainer
+            .selectAll("g.node")
+            .data(nodes, d => {
+                if (d.id === undefined) {
+                    this.newestNodeId += 1;
+                    d.id = this.newestNodeId;
+                }
+                return d.id;
+            });
 
-            return d.id;
-        });
-        const fixedHTMLtooltip = d3
-            .select("body")
-            .append("div")
-            .attr("class", "tree-diagram-tooltip fixed")
-            .style("opacity", 0);
-
-        // Enter any new nodes at the parent's previous position.
-        const nodeEnter = node
-            .enter()
-            .append("g")
-            .attr("class", "node")
-            .attr("transform", () => {
-                return `translate(${source.prevY},${source.prevX})`;
-            })
-            .on("click", d => {
-                this.$scope.$emit("child directive change grid data", {
-                    data: d.category
+        const setNodeEnter = () => {
+            // Enter any new nodes at the parent's previous position.
+            const nodeEnter = nodeSelector
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", () => {
+                    return `translate(${source.prevY},${source.prevX})`;
                 });
+
+            // Color a node lightsteelblue if it's collapsed
+            nodeEnter
+                .append("circle")
+                .attr("r", 1e-6)
+                .style("fill", d => {
+                    return d._children ? "lightsteelblue" : "#fff";
+                });
+
+            nodeEnter
+                .append("text")
+                .attr("x", d => {
+                    return d.children || d._children ? -13 : 13;
+                })
+                .attr("dy", ".35em")
+                .attr("text-anchor", d => {
+                    return d.children || d._children ? "end" : "start";
+                })
+                .text(d => {
+                    return d.name;
+                })
+                .style("fill-opacity", 1e-6);
+
+            nodeEnter.on("click", d => {
                 if (d.children) {
                     d._children = d.children;
                     d.children = null;
@@ -120,197 +142,51 @@ class D3Tree {
                 }
                 this.updateTree(d);
             });
-
-        // add picture
-        nodeEnter
-            .append("defs")
-            .append("pattern")
-            .attr("id", d => {
-                return `node_${d.category}`;
-            })
-            .attr("height", d => {
-                return 100 * (d.count / this.totalItems) ** 0.5;
-            })
-            .attr("width", d => {
-                return 100 * (d.count / this.totalItems) ** 0.5;
-            })
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("height", d => {
-                return 100 * (d.count / this.totalItems) ** 0.5;
-            })
-            .attr("width", d => {
-                return 100 * (d.count / this.totalItems) ** 0.5;
-            })
-            .attr("x", 0)
-            .attr("y", 0);
-
-        const formatPct = val => {
-            return this.$filter("percentage")(val, 2);
         };
 
-        const { totalItems } = this;
+        const setNodeUpdate = () => {
+            // Transition nodes to their new position.
+            const nodeUpdate = nodeSelector
+                .transition()
+                .duration(this.animationDuration)
+                .attr("transform", d => {
+                    return `translate(${d.y},${d.x})`;
+                });
 
-        nodeEnter
-            .append("circle")
-            .attr("r", 1e-6)
-            .style("fill", d => {
-                return d._children ? "lightsteelblue" : "#fff";
-            })
-            .on("mouseover", function(d) {
-                const matrix = this.getScreenCTM().translate(
-                    +this.getAttribute("cx"),
-                    +this.getAttribute("cy")
-                );
+            // Color a node lightsteelblue if it's collapsed
+            nodeUpdate
+                .select("circle")
+                .attr("r", 10)
+                .style("fill", d => {
+                    return d._children ? "lightsteelblue" : "#fff";
+                });
 
-                const radius = +this.getAttribute("r");
+            nodeUpdate.select("text").style("fill-opacity", 1);
+        };
 
-                console.log("circle radius:", radius);
-                console.log("tooltip matrix", matrix);
+        const setNodeExit = () => {
+            // Transition exiting nodes to the parent's new position.
+            const nodeExit = nodeSelector
+                .exit()
+                .transition()
+                .duration(this.animationDuration)
+                .attr("transform", () => {
+                    return `translate(${source.y},${source.x})`;
+                })
+                .remove();
 
-                fixedHTMLtooltip
-                    .transition()
-                    .duration(200)
-                    .style("opacity", 0.9);
+            nodeExit.select("circle").attr("r", 1e-6);
+            nodeExit.select("text").style("fill-opacity", 1e-6);
+        };
 
-                fixedHTMLtooltip
-                    .html(formatPct(d.count / totalItems))
-                    .style(
-                        "left",
-                        `${matrix.e - 0.5 * Math.max(1.5 * radius, 84)}px`
-                    )
-                    .style("top", `${matrix.f - 1.5 * radius}px`)
-                    .style("width", `${Math.max(1.5 * radius, 84)}px`);
-            })
-            .on("mouseout", () => {
-                fixedHTMLtooltip
-                    .transition()
-                    .duration(500)
-                    .style("opacity", 0);
-            });
-
-        const g = nodeEnter.append("g");
-
-        g.append("text")
-            .attr("x", d => {
-                return d.children || d._children
-                    ? 50 + (d.category.length - 10) * 5
-                    : -50 - (d.category.length - 10) * 5;
-            })
-            .attr("dy", "0.5em")
-            .attr("text-anchor", d => {
-                return d.children || d._children ? "end" : "start";
-            })
-            .text(d => {
-                return d.category;
-            })
-            .style("background-color", "#ddd")
-            .style("font-size", "1.25em")
-            .style("fill-opacity", 1e-6);
-
-        g.append("text")
-            .attr("x", d => {
-                return d.children || d._children ? -30 : -30;
-            })
-            .attr("dy", "2em")
-            .attr("class", "total")
-            .attr("text-anchor", "start")
-            .text(d => {
-                return `Total: ${d.count}`;
-            })
-            .style("fill-opacity", 1e-6)
-            .selectAll("total text")
-            .call(
-                function(textToWrap, widthToSet) {
-                    textToWrap.each(() => {
-                        const text = d3.select(this);
-                        const words = text
-                            .text()
-                            .split(/\s+/)
-                            .reverse();
-                        let word;
-                        let line = [];
-                        let lineNumber = 0;
-                        const lineHeight = 1.1; // ems
-                        const y = text.attr("y");
-                        const dy = parseFloat(text.attr("dy"));
-                        let tspan = text
-                            .text(null)
-                            .append("tspan")
-                            .attr("x", 0)
-                            .attr("y", y)
-                            .attr("dy", `${dy}em`);
-
-                        while (words.length) {
-                            word = words.pop();
-                            line.push(word);
-                            tspan.text(line.join(" "));
-                            if (
-                                tspan.node().getComputedTextLength() >
-                                widthToSet
-                            ) {
-                                line.pop();
-                                tspan.text(line.join(" "));
-                                line = [word];
-                                lineNumber += 1;
-                                tspan = text
-                                    .append("tspan")
-                                    .attr("x", 0)
-                                    .attr("y", y)
-                                    .attr(
-                                        "dy",
-                                        `${lineNumber * lineHeight + dy}em`
-                                    )
-                                    .text(word);
-                            }
-                        }
-                    });
-                },
-
-                30
-            );
-
-        // Transition nodes to their new position.
-        const nodeUpdate = node
-            .transition()
-            .duration(this.animationDuration)
-            .attr("transform", d => {
-                return `translate(${d.y},${d.x})`;
-            });
-
-        nodeUpdate
-            .select("circle")
-            .attr("r", d => {
-                return 100 * (d.count / this.totalItems) ** 0.5;
-            })
-            .style("fill", d => {
-                return `rgb(${150}, ${(d.count / this.totalItems) *
-                    255}, ${150})`;
-            })
-            .style("fill-opacity", d => {
-                return d.value;
-            });
-
-        nodeUpdate.selectAll("text").style("fill-opacity", 1);
-
-        // Transition exiting nodes to the parent's new position.
-        const nodeExit = node
-            .exit()
-            .transition()
-            .duration(this.animationDuration)
-            .attr("transform", () => {
-                return `translate(${source.y},${source.x})`;
-            })
-            .remove();
-
-        nodeExit.select("circle").attr("r", 1e-6);
-
-        nodeExit.select("text").style("fill-opacity", 1e-6);
+        setNodeEnter();
+        setNodeUpdate();
+        setNodeExit();
     }
 
     updateLinks(links, source) {
         // Update the links…
-        const link = this.svg.selectAll("path.link").data(links, d => {
+        const link = this.svgContainer.selectAll("path.link").data(links, d => {
             return d.target.id;
         });
 
@@ -371,7 +247,7 @@ angular.module("D3Angular").directive("collapsibleTree", [
             link: scope => {
                 const margin = { top: 20, right: 120, bottom: 20, left: 120 };
                 const width = 960 - margin.right - margin.left;
-                const height = 600 - margin.top - margin.bottom;
+                const height = 500 - margin.top - margin.bottom;
                 const d3Tree = new D3Tree(
                     scope.data,
                     margin,
@@ -382,15 +258,6 @@ angular.module("D3Angular").directive("collapsibleTree", [
                 );
                 d3Tree.updateTree(d3Tree.root);
             }
-        };
-    }
-]);
-
-angular.module("D3Angular").filter("percentage", [
-    "$filter",
-    function($filter) {
-        return (input, decimals) => {
-            return `${$filter("number")(input * 100, decimals)}%`;
         };
     }
 ]);
