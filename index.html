@@ -53,6 +53,7 @@
 
     <body ng-controller="MainCtrl as main">
         <div ng-if="main.diagramData">
+            <button ng-click="main.setColorPath(main.diagramData, main.path)">Toggle Path</button>
             <collapsible-tree data="main.diagramData"></collapsible-tree>
         </div>
     </body>

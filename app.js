@@ -35,8 +35,55 @@ angular.module("D3Angular").controller("MainCtrl", [
                 ]
             }
         ];
+
+        this.originalDiagramData = [];
+
+        this.path = ["Top Level", "Level 2: A", "Son of A"];
+
+        this.setColorPath = (tree, path) => {
+            if (!path.length) {
+                throw new Error("Path must be non-empty");
+            } else if (tree[0].name !== path[0]) {
+                throw new Error("Root of tree must be first node in path.");
+            }
+
+            if (this.originalDiagramData.length) {
+                this.diagramData = [...this.originalDiagramData];
+                this.originalDiagramData = [];
+                return;
+            }
+
+            this.originalDiagramData = angular.copy(this.diagramData);
+
+            const path_copy = [...path].reverse();
+            const tree_copy = angular.copy(tree);
+            path_copy.pop();
+            const highlighted_tree = [helper(tree_copy[0], path_copy)];
+
+            if (path_copy.length) {
+                throw new Error("Path does not exist in tree.");
+            }
+
+            this.diagramData = angular.copy(highlighted_tree);
+        };
     }
 ]);
+
+function helper(root, path) {
+    root.isInPath = true;
+    if (!path.length) {
+        return root;
+    }
+
+    const next_node = path.pop();
+    if ("children" in root && root.children.length) {
+        root.children.map(child => {
+            return child.name === next_node ? helper(child, path) : child;
+        });
+    }
+
+    return root;
+}
 
 class D3Tree {
     constructor(treeData, margin, width, height, $filter, $scope) {
@@ -116,6 +163,13 @@ class D3Tree {
                 .attr("r", 1e-6)
                 .style("fill", d => {
                     return d._children ? "lightsteelblue" : "#fff";
+                })
+                .style("stroke", d => {
+                    if (d.isInPath) {
+                        return "green";
+                    }
+
+                    return "#888";
                 });
 
             nodeEnter
@@ -159,6 +213,13 @@ class D3Tree {
                 .attr("r", 10)
                 .style("fill", d => {
                     return d._children ? "lightsteelblue" : "#fff";
+                })
+                .style("stroke", d => {
+                    if (d.isInPath) {
+                        return "green";
+                    }
+
+                    return "#888";
                 });
 
             nodeUpdate.select("text").style("fill-opacity", 1);
@@ -198,6 +259,13 @@ class D3Tree {
                 const o = { x: source.prevX, y: source.prevY };
                 return this.drawDiagonal({ source: o, target: o });
             });
+
+        link.style("stroke", d => {
+            if (d.target.isInPath) {
+                return "green";
+            }
+            return "#ccc";
+        });
 
         // Transition links to their new position.
         link.transition()
@@ -257,6 +325,15 @@ angular.module("D3Angular").directive("collapsibleTree", [
                     scope
                 );
                 d3Tree.updateTree(d3Tree.root);
+
+                scope.$watchCollection("data", (newData, oldData) => {
+                    if (newData !== oldData) {
+                        d3Tree.root = angular.copy(newData[0]);
+                        d3Tree.root.prevX = d3Tree.dimensions.height / 2;
+                        d3Tree.root.prevY = 0;
+                        d3Tree.updateTree(d3Tree.root);
+                    }
+                });
             }
         };
     }
