@@ -7,8 +7,7 @@ angular.module("D3Angular", []);
 
 angular.module("D3Angular").controller("MainCtrl", [
     "$scope",
-    "$http",
-    function($scope, $http) {
+    function() {
         this.diagramData = [
             {
                 name: "Top Level",
@@ -55,16 +54,16 @@ angular.module("D3Angular").controller("MainCtrl", [
 
             this.originalDiagramData = angular.copy(this.diagramData);
 
-            const path_copy = [...path].reverse();
-            const tree_copy = angular.copy(tree);
-            path_copy.pop();
-            const highlighted_tree = [helper(tree_copy[0], path_copy)];
+            const pathCopy = [...path].reverse();
+            const treeCopy = angular.copy(tree);
+            pathCopy.pop();
+            const highlightedTree = [helper(treeCopy[0], pathCopy)];
 
-            if (path_copy.length) {
+            if (pathCopy.length) {
                 throw new Error("Path does not exist in tree.");
             }
 
-            this.diagramData = angular.copy(highlighted_tree);
+            this.diagramData = angular.copy(highlightedTree);
         };
     }
 ]);
@@ -75,10 +74,10 @@ function helper(root, path) {
         return root;
     }
 
-    const next_node = path.pop();
+    const nextNode = path.pop();
     if ("children" in root && root.children.length) {
         root.children.map(child => {
-            return child.name === next_node ? helper(child, path) : child;
+            return child.name === nextNode ? helper(child, path) : child;
         });
     }
 
@@ -86,8 +85,7 @@ function helper(root, path) {
 }
 
 class D3Tree {
-    constructor(treeData, margin, width, height, $filter, $scope) {
-        this.$filter = $filter;
+    constructor(treeData, margin, width, height, $scope) {
         this.$scope = $scope;
 
         this.dimensions = {
@@ -304,9 +302,7 @@ class D3Tree {
 }
 
 angular.module("D3Angular").directive("collapsibleTree", [
-    "$window",
-    "$filter",
-    function($window, $filter) {
+    function() {
         return {
             restrict: "E", // Directive Scope is Element,
             scope: {
@@ -321,7 +317,6 @@ angular.module("D3Angular").directive("collapsibleTree", [
                     margin,
                     width,
                     height,
-                    $filter,
                     scope
                 );
                 d3Tree.updateTree(d3Tree.root);
