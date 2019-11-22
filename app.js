@@ -38,51 +38,8 @@ angular.module("D3Angular").controller("MainCtrl", [
         this.originalDiagramData = [];
 
         this.path = ["Top Level", "Level 2: A", "Son of A"];
-
-        this.setColorPath = (tree, path) => {
-            if (!path.length) {
-                throw new Error("Path must be non-empty");
-            } else if (tree[0].name !== path[0]) {
-                throw new Error("Root of tree must be first node in path.");
-            }
-
-            if (this.originalDiagramData.length) {
-                this.diagramData = [...this.originalDiagramData];
-                this.originalDiagramData = [];
-                return;
-            }
-
-            this.originalDiagramData = angular.copy(this.diagramData);
-
-            const pathCopy = [...path].reverse();
-            const treeCopy = angular.copy(tree);
-            pathCopy.pop();
-            const highlightedTree = [helper(treeCopy[0], pathCopy)];
-
-            if (pathCopy.length) {
-                throw new Error("Path does not exist in tree.");
-            }
-
-            this.diagramData = angular.copy(highlightedTree);
-        };
     }
 ]);
-
-function helper(root, path) {
-    root.isInPath = true;
-    if (!path.length) {
-        return root;
-    }
-
-    const nextNode = path.pop();
-    if ("children" in root && root.children.length) {
-        root.children.map(child => {
-            return child.name === nextNode ? helper(child, path) : child;
-        });
-    }
-
-    return root;
-}
 
 class CollapsibleTreeCtrl {
     constructor($scope) {
@@ -143,6 +100,42 @@ class CollapsibleTreeCtrl {
         this.updateTree(this.root);
     }
 
+    setColorPath() {
+        if (!this.path.length) {
+            throw new Error("Path must be non-empty");
+        } else if (this.root.data.name !== this.path[0]) {
+            throw new Error("Root of tree must be first node in path.");
+        }
+
+        const pathCopy = [...this.path].reverse();
+        pathCopy.pop();
+
+        this.setColorPathHelper(this.root.data, pathCopy);
+        this.updateTree(this.root);
+
+        if (pathCopy.length) {
+            throw new Error("Path does not exist in tree.");
+        }
+    }
+
+    setColorPathHelper(root, path) {
+        root.isInPath = true;
+        if (!path.length) {
+            return root;
+        }
+
+        const nextNode = path.pop();
+        if ("children" in root && root.children.length) {
+            for (let i = 0; i < root.children.length; i++) {
+                if (root.children[i].name === nextNode) {
+                    this.setColorPathHelper(root.children[i], path);
+                }
+            }
+        }
+
+        return root;
+    }
+
     updateNodes(nodes, source) {
         const nodeSelector = this.svgContainer
             .selectAll("g.node")
@@ -172,7 +165,7 @@ class CollapsibleTreeCtrl {
                     return d._children ? "lightsteelblue" : "#fff";
                 })
                 .style("stroke", d => {
-                    if (d.isInPath) {
+                    if (d.data.isInPath) {
                         return "green";
                     }
 
@@ -225,7 +218,7 @@ class CollapsibleTreeCtrl {
                     return d._children ? "lightsteelblue" : "#fff";
                 })
                 .style("stroke", d => {
-                    if (d.isInPath) {
+                    if (d.data.isInPath) {
                         return "green";
                     }
 
@@ -271,8 +264,8 @@ class CollapsibleTreeCtrl {
                 return this.drawDiagonal({ source: o, target: o });
             });
 
-        linkEnter.style("stroke", d => {
-            if (d.isInPath) {
+        link.style("stroke", d => {
+            if (d.data.isInPath) {
                 return "green";
             }
             return "#ccc";
@@ -297,7 +290,7 @@ class CollapsibleTreeCtrl {
     }
 
     updateTree(source) {
-        const treeData = this.treeVisual(this.root);
+        const treeData = this.treeVisual(source);
         const nodes = treeData.descendants();
         const links = treeData.descendants().slice(1);
 
