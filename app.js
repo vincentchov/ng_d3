@@ -100,6 +100,22 @@ class CollapsibleTreeCtrl {
         this.updateTree(this.root);
     }
 
+    clearAll(node, clearHighlighting = false) {
+        if (clearHighlighting) {
+            node.isInPath = false;
+        }
+
+        if (node.children) {
+            node.children.forEach(child => {
+                this.clearAll(child, clearHighlighting);
+            });
+        } else if (node._children) {
+            node._children.forEach(child => {
+                this.clearAll(child, clearHighlighting);
+            });
+        }
+    }
+
     setColorPath() {
         if (!this.path.length) {
             throw new Error("Path must be non-empty");
@@ -109,6 +125,12 @@ class CollapsibleTreeCtrl {
 
         const pathCopy = [...this.path].reverse();
         pathCopy.pop();
+
+        if (this.root.data.isInPath) {
+            this.clearAll(this.root.data, true);
+            this.updateTree(this.root);
+            return;
+        }
 
         this.setColorPathHelper(this.root.data, pathCopy);
         this.updateTree(this.root);
