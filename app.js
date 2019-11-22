@@ -97,7 +97,7 @@ class D3Tree {
         this.newestNodeId = 0;
         this.animationDuration = 750;
 
-        this.treeVisual = d3.layout
+        this.treeVisual = d3
             .tree()
             .size([this.dimensions.height, this.dimensions.width]);
 
@@ -124,10 +124,13 @@ class D3Tree {
                 })`
             );
 
-        this.drawDiagonal = d3.svg.diagonal().projection(d => [d.y, d.x]);
+        this.drawDiagonal = d3
+            .linkHorizontal()
+            .x(d => d.y)
+            .y(d => d.x);
 
         // eslint-disable-next-line prefer-destructuring
-        this.root = angular.copy(treeData[0]);
+        this.root = d3.hierarchy(treeData[0], d => d.children);
         this.root.prevX = this.dimensions.height / 2;
         this.root.prevY = 0;
 
@@ -180,7 +183,7 @@ class D3Tree {
                     return d.children || d._children ? "end" : "start";
                 })
                 .text(d => {
-                    return d.name;
+                    return d.data.name;
                 })
                 .style("fill-opacity", 1e-6);
 
@@ -194,11 +197,14 @@ class D3Tree {
                 }
                 this.updateTree(d);
             });
+
+            return nodeEnter;
         };
 
-        const setNodeUpdate = () => {
+        const setNodeUpdate = nodeEnter => {
             // Transition nodes to their new position.
-            const nodeUpdate = nodeSelector
+            const nodeUpdate = nodeEnter
+                .merge(nodeSelector)
                 .transition()
                 .duration(this.animationDuration)
                 .attr("transform", d => {
@@ -238,19 +244,20 @@ class D3Tree {
             nodeExit.select("text").style("fill-opacity", 1e-6);
         };
 
-        setNodeEnter();
-        setNodeUpdate();
+        const nodeEnterSelector = setNodeEnter();
+        setNodeUpdate(nodeEnterSelector);
         setNodeExit();
     }
 
     updateLinks(links, source) {
         // Update the links…
         const link = this.svgContainer.selectAll("path.link").data(links, d => {
-            return d.target.id;
+            return d.id;
         });
 
         // Enter any new links at the parent's previous position.
-        link.enter()
+        const linkEnter = link
+            .enter()
             .insert("path", "g")
             .attr("class", "link")
             .attr("d", () => {
@@ -258,17 +265,19 @@ class D3Tree {
                 return this.drawDiagonal({ source: o, target: o });
             });
 
-        link.style("stroke", d => {
-            if (d.target.isInPath) {
+        linkEnter.style("stroke", d => {
+            if (d.isInPath) {
                 return "green";
             }
             return "#ccc";
         });
 
+        const linkUpdate = linkEnter.merge(link);
         // Transition links to their new position.
-        link.transition()
+        linkUpdate
+            .transition()
             .duration(this.animationDuration)
-            .attr("d", this.drawDiagonal);
+            .attr("d", d => this.drawDiagonal({ source: d, target: d.parent }));
 
         // Transition exiting nodes to the parent's new position.
         link.exit()
@@ -282,8 +291,9 @@ class D3Tree {
     }
 
     updateTree(source) {
-        const nodes = this.treeVisual.nodes(this.root).reverse();
-        const links = this.treeVisual.links(nodes);
+        const treeData = this.treeVisual(this.root);
+        const nodes = treeData.descendants();
+        const links = treeData.descendants().slice(1);
 
         // Normalize for fixed-depth.
         nodes.forEach(d => {
