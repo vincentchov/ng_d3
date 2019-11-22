@@ -84,9 +84,12 @@ function helper(root, path) {
     return root;
 }
 
-class D3Tree {
-    constructor(treeData, margin, width, height, $scope) {
+class CollapsibleTreeCtrl {
+    constructor($scope) {
         this.$scope = $scope;
+        const margin = { top: 20, right: 120, bottom: 20, left: 120 };
+        const width = 960 - margin.right - margin.left;
+        const height = 500 - margin.top - margin.bottom;
 
         this.dimensions = {
             margin: margin,
@@ -96,7 +99,9 @@ class D3Tree {
 
         this.newestNodeId = 0;
         this.animationDuration = 750;
+    }
 
+    $onInit() {
         this.treeVisual = d3
             .tree()
             .size([this.dimensions.height, this.dimensions.width]);
@@ -130,11 +135,12 @@ class D3Tree {
             .y(d => d.x);
 
         // eslint-disable-next-line prefer-destructuring
-        this.root = d3.hierarchy(treeData[0], d => d.children);
+        this.root = d3.hierarchy(this.treeData[0], d => d.children);
         this.root.prevX = this.dimensions.height / 2;
         this.root.prevY = 0;
 
         d3.select(window.self.frameElement).style("height", "500px");
+        this.updateTree(this.root);
     }
 
     updateNodes(nodes, source) {
@@ -311,35 +317,11 @@ class D3Tree {
     }
 }
 
-angular.module("D3Angular").directive("collapsibleTree", [
-    function() {
-        return {
-            restrict: "E", // Directive Scope is Element,
-            scope: {
-                data: "="
-            },
-            link: scope => {
-                const margin = { top: 20, right: 120, bottom: 20, left: 120 };
-                const width = 960 - margin.right - margin.left;
-                const height = 500 - margin.top - margin.bottom;
-                const d3Tree = new D3Tree(
-                    scope.data,
-                    margin,
-                    width,
-                    height,
-                    scope
-                );
-                d3Tree.updateTree(d3Tree.root);
-
-                scope.$watchCollection("data", (newData, oldData) => {
-                    if (newData !== oldData) {
-                        d3Tree.root = angular.copy(newData[0]);
-                        d3Tree.root.prevX = d3Tree.dimensions.height / 2;
-                        d3Tree.root.prevY = 0;
-                        d3Tree.updateTree(d3Tree.root);
-                    }
-                });
-            }
-        };
-    }
-]);
+angular.module("D3Angular").component("collapsibleTree", {
+    bindings: {
+        treeData: "<",
+        path: "<"
+    },
+    templateUrl: "collapsibleTreeTemplate.html",
+    controller: ["$scope", CollapsibleTreeCtrl]
+});
