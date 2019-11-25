@@ -20,6 +20,7 @@ class collapsibleTreeCtrl {
 
         this.newestNodeId = 0;
         this.animationDuration = 750;
+        this.childrenPresent = d => Boolean(d.children || d._children);
     }
 
     $onInit() {
@@ -138,6 +139,8 @@ class collapsibleTreeCtrl {
                 return d.id;
             });
 
+        const getOffset = d => this.childrenPresent(d) ? -13: 13
+
         const setNodeEnter = () => {
             // Enter any new nodes at the parent's previous position.
             const nodeEnter = nodeSelector
@@ -151,31 +154,24 @@ class collapsibleTreeCtrl {
             // Color a node lightsteelblue if it's collapsed
             nodeEnter
                 .append("circle")
-                .attr("r", 1e-6)
-                .style("fill", d => {
-                    return d._children ? "lightsteelblue" : "#fff";
-                })
-                .style("stroke", d => {
-                    if (d.data.isInPath) {
-                        return "green";
-                    }
-
-                    return "#888";
-                });
+                .attr("r", 1e-6);
 
             nodeEnter
                 .append("text")
-                .attr("x", d => {
-                    return d.children || d._children ? -13 : 13;
-                })
+                .attr("x", getOffset)
                 .attr("dy", ".35em")
-                .attr("text-anchor", d => {
-                    return d.children || d._children ? "end" : "start";
-                })
-                .text(d => {
-                    return d.data.name;
-                })
+                .text(d => d.data.name)
                 .style("fill-opacity", 1e-6);
+
+            nodeSelector
+                .select("text")
+                .attr("x", getOffset)
+                .classed("leftToRight", () => true)
+                .classed("childrenPresent", this.childrenPresent);
+
+            nodeSelector
+                .select("circle")
+                .attr("isInPath", d => d.data.isInPath)
 
             nodeEnter.on("click", d => {
                 if (d.children) {
@@ -204,17 +200,7 @@ class collapsibleTreeCtrl {
             // Color a node lightsteelblue if it's collapsed
             nodeUpdate
                 .select("circle")
-                .attr("r", 10)
-                .style("fill", d => {
-                    return d._children ? "lightsteelblue" : "#fff";
-                })
-                .style("stroke", d => {
-                    if (d.data.isInPath) {
-                        return "green";
-                    }
-
-                    return "#888";
-                });
+                .attr("r", 10);
 
             nodeUpdate.select("text").style("fill-opacity", 1);
         };
@@ -278,6 +264,8 @@ class collapsibleTreeCtrl {
                 return this.drawDiagonal({ source: o, target: o });
             })
             .remove();
+
+        link.classed("isInPath", d => d.data.isInPath);
     }
 
     updateTree(source) {
