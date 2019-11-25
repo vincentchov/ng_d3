@@ -3,31 +3,46 @@
 }
 
 .node circle {
-    fill: #fff;
-    stroke: #888;
-    stroke-width: 0.063em;
+    fill: lightsteelblue;
+    stroke: #99CC33;
+    stroke-width: 1.5px;
+}
+
+.node circle.isInPath {
+    fill: #C678DD;
+    stroke: #C678DD;
+}
+
+.node circle.noChildren {
+    fill: #852958;
 }
 
 .node text {
-    font: 1em sans-serif;
+    fill: #40A03F;
+    font-size: 10px;
+    font-family: 'Cardo', Georgia, Times, serif;
+    text-anchor: end;
 }
 
-.link {
+.node text.childrenPresent {
+    text-anchor: start;
+}
+
+.node text.leftToRight {
+    text-anchor: start;
+}
+
+.node text.leftToRight.childrenPresent {
+    text-anchor: end;
+}
+
+path.link {
     fill: none;
-    stroke: #ccc;
-    stroke-width: 0.125em;
+    stroke: #CCCCCC;
+    stroke-width: 1.5px;
 }
 
-div.tree-diagram-tooltip {
-    position: absolute;
-    text-align: center;
-    width: 8em;
-    height: 1.5em;
-    padding-top: 1%;
-    font: 1em sans-serif;
-    background: #555;
-    color: white;
-    border: 0;
-    border-radius: 0.25em;
-    pointer-events: none;
+path.isInPath {
+    stroke: #C678DD;
 }
+
