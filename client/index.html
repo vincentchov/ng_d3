@@ -13,10 +13,10 @@
         <script src="app.js"></script>
     </head>
 
-    <body ng-app="D3Angular">
-        <div ng-controller="MainCtrl as main">
-            <div ng-if="main.diagramData">
-                <collapsible-tree tree-data="main.diagramData" path="main.path"></collapsible-tree>
+    <body ng-app="app">
+        <div ng-controller="MainCtrl as $ctrl">
+            <div ng-if="$ctrl.diagramData">
+                <collapsible-tree tree-data="$ctrl.diagramData" path="$ctrl.path"></collapsible-tree>
             </div>
         </div>
     </body>

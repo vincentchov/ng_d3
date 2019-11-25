@@ -3,9 +3,9 @@
 /* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
 
-angular.module("D3Angular", []);
+angular.module("app", []);
 
-angular.module("D3Angular").controller("MainCtrl", [
+angular.module("app").controller("MainCtrl", [
     "$scope",
     function() {
         this.diagramData = [
@@ -338,7 +338,7 @@ class CollapsibleTreeCtrl {
     }
 }
 
-angular.module("D3Angular").component("collapsibleTree", {
+angular.module("app").component("collapsibleTree", {
     bindings: {
         treeData: "<",
         path: "<"
