@@ -78,6 +78,11 @@ class CollapsibleTreeCtrl {
                     this.dimensions.margin.top +
                     this.dimensions.margin.bottom
             )
+            .call(
+                d3.zoom().on("zoom", () => {
+                    this.svgContainer.attr("transform", d3.event.transform);
+                })
+            )
             .append("g")
             .attr(
                 "transform",
