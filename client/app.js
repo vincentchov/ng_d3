@@ -42,8 +42,9 @@ angular.module("D3Angular").controller("MainCtrl", [
 ]);
 
 class CollapsibleTreeCtrl {
-    constructor($scope) {
+    constructor($scope, $element) {
         this.$scope = $scope;
+        this.$element = $element;
         const margin = { top: 20, right: 120, bottom: 20, left: 120 };
         const width = 960 - margin.right - margin.left;
         const height = 500 - margin.top - margin.bottom;
@@ -64,7 +65,7 @@ class CollapsibleTreeCtrl {
             .size([this.dimensions.height, this.dimensions.width]);
 
         this.svgContainer = d3
-            .select("body")
+            .select(this.$element[0].querySelector(".visualization"))
             .append("svg")
             .attr(
                 "width",
@@ -343,5 +344,5 @@ angular.module("D3Angular").component("collapsibleTree", {
         path: "<"
     },
     templateUrl: "collapsibleTreeTemplate.html",
-    controller: ["$scope", CollapsibleTreeCtrl]
+    controller: ["$scope", "$element", CollapsibleTreeCtrl]
 });
