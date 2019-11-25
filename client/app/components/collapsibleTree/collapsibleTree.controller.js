@@ -2,11 +2,12 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
+import * as d3 from 'd3';
 
-class CollapsibleTreeCtrl {
-    constructor($scope, $element) {
-        this.$scope = $scope;
+class collapsibleTreeCtrl {
+    constructor($element) {
         this.$element = $element;
+        this.name = "collapsibleTree";
         const margin = { top: 20, right: 120, bottom: 20, left: 120 };
         const width = 960 - margin.right - margin.left;
         const height = 500 - margin.top - margin.bottom;
@@ -300,11 +301,4 @@ class CollapsibleTreeCtrl {
     }
 }
 
-angular.module("app").component("collapsibleTree", {
-    bindings: {
-        treeData: "<",
-        path: "<"
-    },
-    templateUrl: "collapsibleTreeTemplate.html",
-    controller: ["$scope", "$element", CollapsibleTreeCtrl]
-});
+export default collapsibleTreeCtrl;
