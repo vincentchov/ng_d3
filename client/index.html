@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="D3Angular">
-
+<html>
     <head>
         <meta charset="utf-8" />
         <title>Angular-nvD3 Multi Chart</title>
@@ -12,48 +11,13 @@
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.11/angular.min.js"></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="app.js"></script>
-        <style>
-
-.node {
-    cursor: pointer;
-}
-
-      .node circle {
-          fill: #fff;
-          stroke: #888;
-          stroke-width: 0.063em;
-      }
-
-      .node text {
-          font: 1em sans-serif;
-      }
-
-      .link {
-          fill: none;
-          stroke: #ccc;
-          stroke-width: 0.125em;
-      }
-
-      div.tree-diagram-tooltip {
-          position: absolute;
-          text-align: center;
-          width: 8em;
-          height: 1.5em;
-          padding-top: 1%;
-          font: 1em sans-serif;
-          background: #555;
-          color: white;
-          border: 0;
-          border-radius: 0.25em;
-          pointer-events: none;
-      }
-
-        </style>
     </head>
 
-    <body ng-controller="MainCtrl as main">
-        <div ng-if="main.diagramData">
-            <collapsible-tree tree-data="main.diagramData" path="main.path"></collapsible-tree>
+    <body ng-app="D3Angular">
+        <div ng-controller="MainCtrl as main">
+            <div ng-if="main.diagramData">
+                <collapsible-tree tree-data="main.diagramData" path="main.path"></collapsible-tree>
+            </div>
         </div>
     </body>
 
