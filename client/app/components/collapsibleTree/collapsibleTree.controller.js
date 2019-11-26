@@ -144,8 +144,11 @@ class collapsibleTreeCtrl {
                 .enter()
                 .append("g")
                 .attr("class", "node")
-                .attr("transform", () => {
-                    return `translate(${source.prevY},${source.prevX})`;
+                .attr("transform", d => {
+                    if (d.parent) {
+                        return `translate(${d.parent.y},${d.parent.x})`;
+                    }
+                    return `translate(${d.prevY},${d.prevX})`;
                 });
 
             // Color a node lightsteelblue if it's collapsed
@@ -188,9 +191,7 @@ class collapsibleTreeCtrl {
                 .merge(nodeSelector)
                 .transition()
                 .duration(this.animationDuration)
-                .attr("transform", d => {
-                    return `translate(${d.y},${d.x})`;
-                });
+                .attr("transform", d => `translate(${d.y},${d.x})`);
 
             // Color a node lightsteelblue if it's collapsed
             nodeUpdate.select("circle").attr("r", 10);
@@ -224,13 +225,12 @@ class collapsibleTreeCtrl {
             return d.id;
         });
 
-        // Enter any new links at the parent's previous position.
         const linkEnter = link
             .enter()
             .insert("path", "g")
             .attr("class", "link")
             .attr("d", d => {
-                const o = { x: d.parent.prevX, y: d.parent.prevY };
+                const o = { x: d.parent.x, y: d.parent.y };
                 return this.drawDiagonal({ source: o, target: o });
             });
 
@@ -266,9 +266,12 @@ class collapsibleTreeCtrl {
         const nodes = treeData.descendants();
         const links = treeData.descendants().slice(1);
 
-        // Normalize for fixed-depth.
         nodes.forEach(d => {
             d.y = d.depth * 180;
+            if (d.parent) {
+                d.prevX = d.parent.x;
+                d.prevY = d.parent.y;
+            }
         });
 
         this.updateNodes(nodes, source);
