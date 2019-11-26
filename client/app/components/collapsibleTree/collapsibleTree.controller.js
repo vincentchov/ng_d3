@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
-import * as d3 from 'd3';
+import * as d3 from "d3";
 
 class collapsibleTreeCtrl {
     constructor($element) {
@@ -51,9 +51,7 @@ class collapsibleTreeCtrl {
             .append("g")
             .attr(
                 "transform",
-                `translate(${this.dimensions.margin.left},${
-                    this.dimensions.margin.top
-                })`
+                `translate(${this.dimensions.margin.left},${this.dimensions.margin.top})`
             );
 
         this.drawDiagonal = d3
@@ -66,7 +64,6 @@ class collapsibleTreeCtrl {
         this.root.prevX = this.dimensions.height / 2;
         this.root.prevY = 0;
 
-        d3.select(window.self.frameElement).style("height", "500px");
         this.updateTree(this.root);
     }
 
@@ -139,7 +136,7 @@ class collapsibleTreeCtrl {
                 return d.id;
             });
 
-        const getOffset = d => this.childrenPresent(d) ? -13: 13
+        const getOffset = d => (this.childrenPresent(d) ? -13 : 13);
 
         const setNodeEnter = () => {
             // Enter any new nodes at the parent's previous position.
@@ -152,9 +149,7 @@ class collapsibleTreeCtrl {
                 });
 
             // Color a node lightsteelblue if it's collapsed
-            nodeEnter
-                .append("circle")
-                .attr("r", 1e-6);
+            nodeEnter.append("circle").attr("r", 1e-6);
 
             nodeEnter
                 .append("text")
@@ -171,7 +166,7 @@ class collapsibleTreeCtrl {
 
             nodeSelector
                 .select("circle")
-                .attr("isInPath", d => d.data.isInPath)
+                .attr("isInPath", d => d.data.isInPath);
 
             nodeEnter.on("click", d => {
                 if (d.children) {
@@ -198,9 +193,7 @@ class collapsibleTreeCtrl {
                 });
 
             // Color a node lightsteelblue if it's collapsed
-            nodeUpdate
-                .select("circle")
-                .attr("r", 10);
+            nodeUpdate.select("circle").attr("r", 10);
 
             nodeUpdate.select("text").style("fill-opacity", 1);
         };
