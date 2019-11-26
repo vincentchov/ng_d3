@@ -176,7 +176,7 @@ class collapsibleTreeCtrl {
                     d.children = d._children;
                     d._children = null;
                 }
-                this.updateTree(d);
+                this.updateTree(this.root);
             });
 
             return nodeEnter;
@@ -204,8 +204,8 @@ class collapsibleTreeCtrl {
                 .exit()
                 .transition()
                 .duration(this.animationDuration)
-                .attr("transform", () => {
-                    return `translate(${source.y},${source.x})`;
+                .attr("transform", d => {
+                    return `translate(${d.parent.y},${d.parent.x})`;
                 })
                 .remove();
 
@@ -229,8 +229,8 @@ class collapsibleTreeCtrl {
             .enter()
             .insert("path", "g")
             .attr("class", "link")
-            .attr("d", () => {
-                const o = { x: source.prevX, y: source.prevY };
+            .attr("d", d => {
+                const o = { x: d.parent.prevX, y: d.parent.prevY };
                 return this.drawDiagonal({ source: o, target: o });
             });
 
@@ -252,8 +252,8 @@ class collapsibleTreeCtrl {
         link.exit()
             .transition()
             .duration(this.animationDuration)
-            .attr("d", () => {
-                const o = { x: source.x, y: source.y };
+            .attr("d", d => {
+                const o = { x: d.parent.x, y: d.parent.y };
                 return this.drawDiagonal({ source: o, target: o });
             })
             .remove();
