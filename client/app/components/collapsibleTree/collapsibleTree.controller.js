@@ -232,7 +232,8 @@ class collapsibleTreeCtrl {
             .attr("d", d => {
                 const o = { x: d.parent.x, y: d.parent.y };
                 return this.drawDiagonal({ source: o, target: o });
-            });
+            })
+            .style("stroke-width", "0");
 
         link.style("stroke", d => {
             if (d.data.isInPath) {
@@ -246,7 +247,8 @@ class collapsibleTreeCtrl {
         linkUpdate
             .transition()
             .duration(this.animationDuration)
-            .attr("d", d => this.drawDiagonal({ source: d, target: d.parent }));
+            .attr("d", d => this.drawDiagonal({ source: d, target: d.parent }))
+            .style("stroke-width", "1.5px");
 
         // Transition exiting nodes to the parent's new position.
         link.exit()
