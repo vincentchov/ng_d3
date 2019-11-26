@@ -11,6 +11,7 @@ const isDev = process.env.NODE_ENV !== "production";
 if (isDev) {
     module.exports = {
         mode: "development",
+        devtool: "inline-source-map",
         entry: path.join(libPath, "/app/app.module.js"),
         output: {
             path: path.join(wwwPath),
@@ -76,9 +77,7 @@ if (isDev) {
                 pkg: pkg,
                 template: path.join(libPath, "index.ejs"),
                 inject: true
-            }),
-
-            new webpack.LoaderOptionsPlugin({ debug: true })
+            })
         ]
     };
 } else {
