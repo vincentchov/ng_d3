@@ -154,7 +154,10 @@ class collapsibleTreeCtrl {
                 });
 
             // Color a node lightsteelblue if it's collapsed
-            nodeEnter.append("circle").attr("r", 1e-6);
+            nodeEnter
+                .append("circle")
+                .attr("r", 1e-6)
+                .attr("isInPath", d => d.data.isInPath);
 
             nodeEnter
                 .append("text")
@@ -168,10 +171,6 @@ class collapsibleTreeCtrl {
                 .attr("x", getOffset)
                 .classed("leftToRight", () => true)
                 .classed("childrenPresent", this.childrenPresent);
-
-            nodeSelector
-                .select("circle")
-                .attr("isInPath", d => d.data.isInPath);
 
             nodeEnter.on("click", d => {
                 if (d.children) {
@@ -190,31 +189,33 @@ class collapsibleTreeCtrl {
         const setNodeUpdate = nodeEnter => {
             // Transition nodes to their new position.
             const nodeUpdate = nodeEnter.merge(nodeSelector).call(selector => {
+                selector.select("circle").attr("r", 10);
+                selector.select("text").style("fill-opacity", 1);
                 selector
                     .transition()
                     .duration(this.animationDuration)
                     .attr("transform", d => `translate(${d.y},${d.x})`);
             });
-
-            // Color a node lightsteelblue if it's collapsed
-            nodeUpdate.select("circle").attr("r", 10);
-
-            nodeUpdate.select("text").style("fill-opacity", 1);
         };
 
         const setNodeExit = () => {
             // Transition exiting nodes to the parent's new position.
-            const nodeExit = nodeSelector
-                .exit()
-                .transition()
-                .duration(this.animationDuration)
-                .attr("transform", d => {
-                    return `translate(${d.parent.y},${d.parent.x})`;
-                })
-                .remove();
+            const nodeExit = nodeSelector.exit().call(selector => {
+                selector
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("transform", d => {
+                        return `translate(${d.parent.y},${d.parent.x})`;
+                    })
+                    .remove()
+                    .select("circle")
+                    .attr("r", 1e-6)
+                    .select("text")
+                    .style("fill-opacity", 1e-6);
+            });
 
-            nodeExit.select("circle").attr("r", 1e-6);
-            nodeExit.select("text").style("fill-opacity", 1e-6);
+            // nodeExit.select("circle").attr("r", 1e-6);
+            //  nodeExit.select("text").style("fill-opacity", 1e-6);
         };
 
         const nodeEnterSelector = setNodeEnter();
