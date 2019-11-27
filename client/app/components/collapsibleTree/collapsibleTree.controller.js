@@ -144,11 +144,13 @@ class collapsibleTreeCtrl {
                 .enter()
                 .append("g")
                 .attr("class", "node")
-                .attr("transform", d => {
-                    if (d.parent) {
-                        return `translate(${d.parent.y},${d.parent.x})`;
-                    }
-                    return `translate(${d.prevY},${d.prevX})`;
+                .call(selector => {
+                    selector.attr("transform", d => {
+                        if (d.parent) {
+                            return `translate(${d.parent.y},${d.parent.x})`;
+                        }
+                        return `translate(${d.prevY},${d.prevX})`;
+                    });
                 });
 
             // Color a node lightsteelblue if it's collapsed
@@ -156,10 +158,10 @@ class collapsibleTreeCtrl {
 
             nodeEnter
                 .append("text")
+                .style("fill-opacity", 1e-6)
                 .attr("x", getOffset)
                 .attr("dy", ".35em")
-                .text(d => d.data.name)
-                .style("fill-opacity", 1e-6);
+                .text(d => d.data.name);
 
             nodeSelector
                 .select("text")
@@ -187,11 +189,12 @@ class collapsibleTreeCtrl {
 
         const setNodeUpdate = nodeEnter => {
             // Transition nodes to their new position.
-            const nodeUpdate = nodeEnter
-                .merge(nodeSelector)
-                .transition()
-                .duration(this.animationDuration)
-                .attr("transform", d => `translate(${d.y},${d.x})`);
+            const nodeUpdate = nodeEnter.merge(nodeSelector).call(selector => {
+                selector
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("transform", d => `translate(${d.y},${d.x})`);
+            });
 
             // Color a node lightsteelblue if it's collapsed
             nodeUpdate.select("circle").attr("r", 10);
@@ -229,38 +232,39 @@ class collapsibleTreeCtrl {
             .enter()
             .insert("path", "g")
             .attr("class", "link")
-            .attr("d", d => {
-                const o = { x: d.parent.x, y: d.parent.y };
-                return this.drawDiagonal({ source: o, target: o });
-            })
-            .style("stroke-width", "0");
-
-        link.style("stroke", d => {
-            if (d.data.isInPath) {
-                return "green";
-            }
-            return "#ccc";
-        });
+            .style("stroke-width", "0")
+            .call(selector => {
+                selector.transition().attr("d", d => {
+                    const o = { x: d.parent.x, y: d.parent.y };
+                    return this.drawDiagonal({ source: o, target: o });
+                });
+            });
 
         const linkUpdate = linkEnter.merge(link);
         // Transition links to their new position.
         linkUpdate
-            .transition()
-            .duration(this.animationDuration)
-            .attr("d", d => this.drawDiagonal({ source: d, target: d.parent }))
-            .style("stroke-width", "1.5px");
+            .classed("isInPath", d => d.data.isInPath)
+            .style("stroke-width", "1.5px")
+            .call(selector => {
+                selector
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("d", d =>
+                        this.drawDiagonal({ source: d, target: d.parent })
+                    );
+            });
 
         // Transition exiting nodes to the parent's new position.
-        link.exit()
-            .transition()
-            .duration(this.animationDuration)
-            .attr("d", d => {
-                const o = { x: d.parent.x, y: d.parent.y };
-                return this.drawDiagonal({ source: o, target: o });
-            })
-            .remove();
-
-        link.classed("isInPath", d => d.data.isInPath);
+        link.exit().call(selector =>
+            selector
+                .transition()
+                .duration(this.animationDuration)
+                .attr("d", d => {
+                    const o = { x: d.parent.x, y: d.parent.y };
+                    return this.drawDiagonal({ source: o, target: o });
+                })
+                .remove()
+        );
     }
 
     updateTree(source) {
