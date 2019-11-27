@@ -151,6 +151,16 @@ class collapsibleTreeCtrl {
                         }
                         return `translate(${d.prevY},${d.prevX})`;
                     });
+                })
+                .on("click", d => {
+                    if (d.children) {
+                        d._children = d.children;
+                        d.children = null;
+                    } else {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+                    this.updateTree(this.root);
                 });
 
             // Color a node lightsteelblue if it's collapsed
@@ -164,24 +174,9 @@ class collapsibleTreeCtrl {
                 .style("fill-opacity", 1e-6)
                 .attr("x", getOffset)
                 .attr("dy", ".35em")
-                .text(d => d.data.name);
-
-            nodeSelector
-                .select("text")
-                .attr("x", getOffset)
                 .classed("leftToRight", () => true)
-                .classed("childrenPresent", this.childrenPresent);
-
-            nodeEnter.on("click", d => {
-                if (d.children) {
-                    d._children = d.children;
-                    d.children = null;
-                } else {
-                    d.children = d._children;
-                    d._children = null;
-                }
-                this.updateTree(this.root);
-            });
+                .classed("childrenPresent", this.childrenPresent)
+                .text(d => d.data.name);
 
             return nodeEnter;
         };
