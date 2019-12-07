@@ -138,11 +138,19 @@ class collapsibleTreeCtrl {
         // Enter any new nodes at the parent's previous position.
         nodeSelector.join(
             enter => {
-                const node = enter.append("g").attr("class", "node");
+                const node = enter
+                    .append("g")
+                    .attr("class", "node")
+                    .attr("transform", d =>
+                        d.parent
+                            ? `translate(${d.parent.y},${d.parent.x})`
+                            : `translate(${d.prevY},${d.prevX})`
+                    )
+                    .style("visibility", "hidden");
 
                 node.insert("circle")
                     .attr("isInPath", d => d.data.isInPath)
-                    .attr("r", 10)
+                    .attr("r", 0)
                     .style("fill-opacity", 1);
 
                 node.insert("text")
@@ -151,17 +159,22 @@ class collapsibleTreeCtrl {
                     .classed("leftToRight", () => true)
                     .classed("childrenPresent", this.childrenPresent)
                     .text(d => d.data.name)
-                    .style("fill-opacity", 1);
-
-                node.attr("transform", d =>
-                    d.parent
-                        ? `translate(${d.parent.y},${d.parent.x})`
-                        : `translate(${d.prevY},${d.prevX})`
-                );
+                    .style("fill-opacity", 0);
 
                 node.transition()
                     .duration(this.animationDuration)
-                    .attr("transform", d => `translate(${d.y},${d.x})`);
+                    .attr("transform", d => `translate(${d.y},${d.x})`)
+                    .style("visibility", "visible");
+
+                node.select("circle")
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("r", 10);
+
+                node.select("text")
+                    .transition()
+                    .duration(this.animationDuration)
+                    .style("fill-opacity", 1);
 
                 node.on("click", d => {
                     if (d.children) {
@@ -193,6 +206,16 @@ class collapsibleTreeCtrl {
                             : `translate(${d.y},${d.x})`
                     )
                     .remove();
+
+                exit.select("circle")
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("r", 0);
+
+                exit.select("text")
+                    .transition()
+                    .duration(this.animationDuration)
+                    .style("fill-opacity", 0);
             }
         );
     }
