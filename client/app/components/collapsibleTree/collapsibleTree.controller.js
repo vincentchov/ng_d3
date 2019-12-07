@@ -249,14 +249,14 @@ class collapsibleTreeCtrl {
                 const link = enter
                     .insert("path", "g")
                     .style("stroke-width", 0)
-                    .attr("class", d =>
-                        d.data.isInPath ? "link isInPath" : "link"
-                    )
                     .attr("d", prevDiagonal);
 
                 link.transition()
                     .duration(this.animationDuration)
                     .style("stroke-width", "1.5px")
+                    .attr("class", d =>
+                        d.data.isInPath ? "link isInPath" : "link"
+                    )
                     .attr("d", newDiagonal);
             },
 
