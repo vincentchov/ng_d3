@@ -162,10 +162,7 @@ class collapsibleTreeCtrl {
                     .insert("circle")
                     .attr("isInPath", d => d.data.isInPath)
                     .attr("r", 0)
-                    .style("fill-opacity", 1)
-                    .transition()
-                    .duration(this.animationDuration)
-                    .attr("r", 10);
+                    .style("fill-opacity", 1);
 
                 const nodeText = nodeContainer
                     .insert("text")
@@ -174,16 +171,23 @@ class collapsibleTreeCtrl {
                     .classed("leftToRight", () => true)
                     .classed("childrenPresent", this.childrenPresent)
                     .text(d => d.data.name)
-                    .style("fill-opacity", 0)
-                    .transition()
-                    .duration(this.animationDuration)
-                    .style("fill-opacity", 1);
+                    .style("fill-opacity", 0);
 
                 nodeContainer
                     .transition()
                     .duration(this.animationDuration)
                     .attr("transform", d => `translate(${d.y},${d.x})`)
                     .style("visibility", "visible");
+
+                nodeCircle
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("r", 10);
+
+                nodeText
+                    .transition()
+                    .duration(this.animationDuration)
+                    .style("fill-opacity", 1);
             },
 
             update => {
