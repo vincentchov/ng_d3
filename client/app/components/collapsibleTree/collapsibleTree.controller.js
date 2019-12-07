@@ -24,24 +24,18 @@ class collapsibleTreeCtrl {
     }
 
     $onInit() {
-        this.treeVisual = d3
-            .tree()
-            .size([this.dimensions.height, this.dimensions.width]);
+        this.treeVisual = d3.tree().size([this.dimensions.height, this.dimensions.width]);
 
         this.svgContainer = d3
             .select(this.$element[0].querySelector(".visualization"))
             .append("svg")
             .attr(
                 "width",
-                this.dimensions.width +
-                    this.dimensions.margin.right +
-                    this.dimensions.margin.left
+                this.dimensions.width + this.dimensions.margin.right + this.dimensions.margin.left
             )
             .attr(
                 "height",
-                this.dimensions.height +
-                    this.dimensions.margin.top +
-                    this.dimensions.margin.bottom
+                this.dimensions.height + this.dimensions.margin.top + this.dimensions.margin.bottom
             )
             .call(
                 d3.zoom().on("zoom", () => {
@@ -136,9 +130,7 @@ class collapsibleTreeCtrl {
 
         const getOffset = d => (this.childrenPresent(d) ? -13 : 13);
         const parentPositionTranslation = d =>
-            d.parent
-                ? `translate(${d.parent.y},${d.parent.x})`
-                : `translate(${d.y},${d.x})`;
+            d.parent ? `translate(${d.parent.y},${d.parent.x})` : `translate(${d.y},${d.x})`;
         const newPositionTranslation = d => `translate(${d.y},${d.x})`;
         // Enter any new nodes at the parent's previous position.
         nodeSelector.join(
@@ -230,11 +222,7 @@ class collapsibleTreeCtrl {
 
     updateLinks(links, source) {
         // Update the links…
-        const linkSelector = this.svgContainer
-            .selectAll("path.link")
-            .data(links, d => {
-                return d.id;
-            });
+        const linkSelector = this.svgContainer.selectAll("path.link").data(links, d => d.id);
 
         const drawPrevDiagonal = d => {
             const source = { x: d.parent.prevX, y: d.parent.prevY };
@@ -258,9 +246,7 @@ class collapsibleTreeCtrl {
                 link.transition()
                     .duration(this.animationDuration)
                     .style("stroke-width", "1.5px")
-                    .attr("class", d =>
-                        d.data.isInPath ? "link isInPath" : "link"
-                    )
+                    .attr("class", d => (d.data.isInPath ? "link isInPath" : "link"))
                     .attr("d", drawNewDiagonal);
             },
 
@@ -268,9 +254,7 @@ class collapsibleTreeCtrl {
                 update
                     .transition()
                     .duration(this.animationDuration)
-                    .attr("class", d =>
-                        d.data.isInPath ? "link isInPath" : "link"
-                    )
+                    .attr("class", d => (d.data.isInPath ? "link isInPath" : "link"))
                     .attr("d", drawNewDiagonal);
             },
 
