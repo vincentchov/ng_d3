@@ -232,15 +232,15 @@ class collapsibleTreeCtrl {
                 return d.id;
             });
 
-        const prevDiagonal = d => {
-            const source = { x: d.prevX, y: d.prevY };
-            const target = { x: d.parent.prevX, y: d.parent.prevY };
+        const drawPrevDiagonal = d => {
+            const source = { x: d.parent.prevX, y: d.parent.prevY };
+            const target = { x: d.prevX, y: d.prevY };
             return this.drawDiagonal({ source: source, target: target });
         };
 
-        const newDiagonal = d => {
-            const source = { x: d.x, y: d.y };
-            const target = { x: d.parent.x, y: d.parent.y };
+        const drawNewDiagonal = d => {
+            const source = { x: d.parent.x, y: d.parent.y };
+            const target = { x: d.x, y: d.y };
             return this.drawDiagonal({ source: source, target: target });
         };
 
@@ -249,7 +249,7 @@ class collapsibleTreeCtrl {
                 const link = enter
                     .insert("path", "g")
                     .style("stroke-width", 0)
-                    .attr("d", prevDiagonal);
+                    .attr("d", drawPrevDiagonal);
 
                 link.transition()
                     .duration(this.animationDuration)
@@ -257,7 +257,7 @@ class collapsibleTreeCtrl {
                     .attr("class", d =>
                         d.data.isInPath ? "link isInPath" : "link"
                     )
-                    .attr("d", newDiagonal);
+                    .attr("d", drawNewDiagonal);
             },
 
             update => {
@@ -267,7 +267,7 @@ class collapsibleTreeCtrl {
                     .attr("class", d =>
                         d.data.isInPath ? "link isInPath" : "link"
                     )
-                    .attr("d", newDiagonal);
+                    .attr("d", drawNewDiagonal);
             },
 
             exit => {
