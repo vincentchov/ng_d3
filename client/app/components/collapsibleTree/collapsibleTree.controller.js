@@ -146,7 +146,17 @@ class collapsibleTreeCtrl {
                             ? `translate(${d.parent.y},${d.parent.x})`
                             : `translate(${d.prevY},${d.prevX})`
                     )
-                    .style("visibility", "hidden");
+                    .style("visibility", "hidden")
+                    .on("click", d => {
+                        if (d.children) {
+                            d._children = d.children;
+                            d.children = null;
+                        } else {
+                            d.children = d._children;
+                            d._children = null;
+                        }
+                        this.updateTree(this.root);
+                    });
 
                 node.insert("circle")
                     .attr("isInPath", d => d.data.isInPath)
@@ -175,17 +185,6 @@ class collapsibleTreeCtrl {
                     .transition()
                     .duration(this.animationDuration)
                     .style("fill-opacity", 1);
-
-                node.on("click", d => {
-                    if (d.children) {
-                        d._children = d.children;
-                        d.children = null;
-                    } else {
-                        d.children = d._children;
-                        d._children = null;
-                    }
-                    this.updateTree(this.root);
-                });
             },
 
             update => {
