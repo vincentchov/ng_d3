@@ -232,6 +232,18 @@ class collapsibleTreeCtrl {
                 return d.id;
             });
 
+        const prevDiagonal = d => {
+            const source = { x: d.prevX, y: d.prevY };
+            const target = { x: d.parent.prevX, y: d.parent.prevY };
+            return this.drawDiagonal({ source: source, target: target });
+        };
+
+        const newDiagonal = d => {
+            const source = { x: d.x, y: d.y };
+            const target = { x: d.parent.x, y: d.parent.y };
+            return this.drawDiagonal({ source: source, target: target });
+        };
+
         linkSelector.join(
             enter => {
                 const link = enter
@@ -239,14 +251,13 @@ class collapsibleTreeCtrl {
                     .style("stroke-width", 0)
                     .attr("class", d =>
                         d.data.isInPath ? "link isInPath" : "link"
-                    );
+                    )
+                    .attr("d", prevDiagonal);
 
                 link.transition()
                     .duration(this.animationDuration)
                     .style("stroke-width", "1.5px")
-                    .attr("d", d =>
-                        this.drawDiagonal({ source: d, target: d.parent })
-                    );
+                    .attr("d", newDiagonal);
             },
 
             update => {
