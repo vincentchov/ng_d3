@@ -161,7 +161,7 @@ class collapsibleTreeCtrl {
 
                 const nodeCircle = nodeContainer
                     .insert("circle")
-                    .attr("isInPath", d => d.data.isInPath)
+                    .classed("isInPath", d => d.data.isInPath)
                     .attr("r", 0)
                     .style("fill-opacity", 1);
 
@@ -193,10 +193,14 @@ class collapsibleTreeCtrl {
 
             update => {
                 // Transition nodes to their new position.
-                update
+                const nodeContainer = update;
+                const nodeCircle = nodeContainer.select("circle");
+                nodeContainer
                     .transition()
                     .duration(this.animationDuration)
                     .attr("transform", newPositionTranslation);
+
+                nodeCircle.classed("isInPath", d => d.data.isInPath);
             },
 
             // Transition exiting nodes to the parent's new position.
