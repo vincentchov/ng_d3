@@ -135,17 +135,18 @@ class collapsibleTreeCtrl {
         });
 
         const getOffset = d => (this.childrenPresent(d) ? -13 : 13);
+        const parentPositionTranslation = d =>
+            d.parent
+                ? `translate(${d.parent.y},${d.parent.x})`
+                : `translate(${d.prevY},${d.prevX})`;
+        const newPositionTranslation = d => `translate(${d.y},${d.x})`;
         // Enter any new nodes at the parent's previous position.
         nodeSelector.join(
             enter => {
                 const nodeContainer = enter
                     .append("g")
                     .attr("class", "node")
-                    .attr("transform", d =>
-                        d.parent
-                            ? `translate(${d.parent.y},${d.parent.x})`
-                            : `translate(${d.prevY},${d.prevX})`
-                    )
+                    .attr("transform", parentPositionTranslation)
                     .style("visibility", "hidden")
                     .on("click", d => {
                         if (d.children) {
@@ -176,7 +177,7 @@ class collapsibleTreeCtrl {
                 nodeContainer
                     .transition()
                     .duration(this.animationDuration)
-                    .attr("transform", d => `translate(${d.y},${d.x})`)
+                    .attr("transform", newPositionTranslation)
                     .style("visibility", "visible");
 
                 nodeCircle
@@ -195,7 +196,7 @@ class collapsibleTreeCtrl {
                 update
                     .transition()
                     .duration(this.animationDuration)
-                    .attr("transform", d => `translate(${d.y},${d.x})`);
+                    .attr("transform", newPositionTranslation);
             },
 
             // Transition exiting nodes to the parent's new position.
