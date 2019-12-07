@@ -138,7 +138,7 @@ class collapsibleTreeCtrl {
         // Enter any new nodes at the parent's previous position.
         nodeSelector.join(
             enter => {
-                const node = enter
+                const nodeContainer = enter
                     .append("g")
                     .attr("class", "node")
                     .attr("transform", d =>
@@ -158,7 +158,8 @@ class collapsibleTreeCtrl {
                         this.updateTree(this.root);
                     });
 
-                node.insert("circle")
+                const nodeCircle = nodeContainer
+                    .insert("circle")
                     .attr("isInPath", d => d.data.isInPath)
                     .attr("r", 0)
                     .style("fill-opacity", 1)
@@ -166,7 +167,8 @@ class collapsibleTreeCtrl {
                     .duration(this.animationDuration)
                     .attr("r", 10);
 
-                node.insert("text")
+                const nodeText = nodeContainer
+                    .insert("text")
                     .attr("x", getOffset)
                     .attr("dy", ".35em")
                     .classed("leftToRight", () => true)
@@ -177,7 +179,8 @@ class collapsibleTreeCtrl {
                     .duration(this.animationDuration)
                     .style("fill-opacity", 1);
 
-                node.transition()
+                nodeContainer
+                    .transition()
                     .duration(this.animationDuration)
                     .attr("transform", d => `translate(${d.y},${d.x})`)
                     .style("visibility", "visible");
