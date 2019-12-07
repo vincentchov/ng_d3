@@ -200,7 +200,12 @@ class collapsibleTreeCtrl {
 
             // Transition exiting nodes to the parent's new position.
             exit => {
-                exit.transition()
+                const nodeContainer = exit;
+                const nodeCircle = exit.select("circle");
+                const nodeText = exit.select("text");
+
+                nodeContainer
+                    .transition()
                     .duration(this.animationDuration)
                     .attr("transform", d =>
                         d.parent
@@ -209,12 +214,12 @@ class collapsibleTreeCtrl {
                     )
                     .remove();
 
-                exit.select("circle")
+                nodeCircle
                     .transition()
                     .duration(this.animationDuration)
                     .attr("r", 0);
 
-                exit.select("text")
+                nodeText
                     .transition()
                     .duration(this.animationDuration)
                     .style("fill-opacity", 0);
