@@ -135,26 +135,10 @@ class collapsibleTreeCtrl {
         });
 
         const getOffset = d => (this.childrenPresent(d) ? -13 : 13);
-
         // Enter any new nodes at the parent's previous position.
         nodeSelector.join(
             enter => {
-                const node = enter
-                    .append("g")
-                    .attr("class", "node")
-                    .attr("transform", d => {
-                        return `translate(${d.y},${d.x})`;
-                    })
-                    .on("click", d => {
-                        if (d.children) {
-                            d._children = d.children;
-                            d.children = null;
-                        } else {
-                            d.children = d._children;
-                            d._children = null;
-                        }
-                        this.updateTree(this.root);
-                    });
+                const node = enter.append("g").attr("class", "node");
 
                 node.insert("circle")
                     .attr("isInPath", d => d.data.isInPath)
@@ -168,6 +152,27 @@ class collapsibleTreeCtrl {
                     .classed("childrenPresent", this.childrenPresent)
                     .text(d => d.data.name)
                     .style("fill-opacity", 1);
+
+                node.attr("transform", d =>
+                    d.parent
+                        ? `translate(${d.parent.y},${d.parent.x})`
+                        : `translate(${d.prevY},${d.prevX})`
+                );
+
+                node.transition()
+                    .duration(this.animationDuration)
+                    .attr("transform", d => `translate(${d.y},${d.x})`);
+
+                node.on("click", d => {
+                    if (d.children) {
+                        d._children = d.children;
+                        d.children = null;
+                    } else {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+                    this.updateTree(this.root);
+                });
             },
 
             update => {
@@ -182,9 +187,11 @@ class collapsibleTreeCtrl {
             exit => {
                 exit.transition()
                     .duration(this.animationDuration)
-                    .attr("transform", d => {
-                        return `translate(${d.parent.y},${d.parent.x})`;
-                    })
+                    .attr("transform", d =>
+                        d.parent
+                            ? `translate(${d.parent.y},${d.parent.x})`
+                            : `translate(${d.y},${d.x})`
+                    )
                     .remove();
             }
         );
@@ -241,10 +248,6 @@ class collapsibleTreeCtrl {
 
         nodes.forEach(d => {
             d.y = d.depth * 180;
-            if (d.parent) {
-                d.prevX = d.parent.x;
-                d.prevY = d.parent.y;
-            }
         });
 
         this.updateNodes(nodes, source);
