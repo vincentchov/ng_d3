@@ -24,7 +24,7 @@
     text-anchor: end;
 }
 
-.node text.childrenPresent {
+.node text.expanded {
     text-anchor: start;
 }
 
@@ -32,7 +32,7 @@
     text-anchor: start;
 }
 
-.node text.leftToRight.childrenPresent {
+.node text.leftToRight.expanded {
     text-anchor: end;
 }
 

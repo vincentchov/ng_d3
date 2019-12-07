@@ -170,7 +170,7 @@ class collapsibleTreeCtrl {
                     .attr("x", getOffset)
                     .attr("dy", ".35em")
                     .classed("leftToRight", () => true)
-                    .classed("childrenPresent", this.childrenPresent)
+                    .classed("expanded", this.childrenPresent)
                     .text(d => d.data.name)
                     .style("fill-opacity", 0);
 
