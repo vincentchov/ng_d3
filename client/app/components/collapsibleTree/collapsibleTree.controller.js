@@ -266,7 +266,8 @@ class collapsibleTreeCtrl {
                     .duration(this.animationDuration)
                     .attr("class", d =>
                         d.data.isInPath ? "link isInPath" : "link"
-                    );
+                    )
+                    .attr("d", newDiagonal);
             },
 
             exit => {
