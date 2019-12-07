@@ -126,96 +126,68 @@ class collapsibleTreeCtrl {
     }
 
     updateNodes(nodes, source) {
-        const nodeSelector = this.svgContainer
-            .selectAll("g.node")
-            .data(nodes, d => {
-                if (d.id === undefined) {
-                    this.newestNodeId += 1;
-                    d.id = this.newestNodeId;
-                }
-                return d.id;
-            });
+        const nodeSelector = this.svgContainer.selectAll("g").data(nodes, d => {
+            if (d.id === undefined) {
+                this.newestNodeId += 1;
+                d.id = this.newestNodeId;
+            }
+            return d.id;
+        });
 
         const getOffset = d => (this.childrenPresent(d) ? -13 : 13);
 
-        const setNodeEnter = () => {
-            // Enter any new nodes at the parent's previous position.
-            const nodeEnter = nodeSelector
-                .enter()
-                .append("g")
-                .attr("class", "node")
-                .call(selector => {
-                    selector.attr("transform", d => {
-                        if (d.parent) {
-                            return `translate(${d.parent.y},${d.parent.x})`;
+        // Enter any new nodes at the parent's previous position.
+        nodeSelector.join(
+            enter => {
+                const node = enter
+                    .append("g")
+                    .attr("class", "node")
+                    .attr("transform", d => {
+                        return `translate(${d.y},${d.x})`;
+                    })
+                    .on("click", d => {
+                        if (d.children) {
+                            d._children = d.children;
+                            d.children = null;
+                        } else {
+                            d.children = d._children;
+                            d._children = null;
                         }
-                        return `translate(${d.prevY},${d.prevX})`;
+                        this.updateTree(this.root);
                     });
-                })
-                .on("click", d => {
-                    if (d.children) {
-                        d._children = d.children;
-                        d.children = null;
-                    } else {
-                        d.children = d._children;
-                        d._children = null;
-                    }
-                    this.updateTree(this.root);
-                });
 
-            // Color a node lightsteelblue if it's collapsed
-            nodeEnter
-                .append("circle")
-                .attr("r", 1e-6)
-                .attr("isInPath", d => d.data.isInPath);
+                node.insert("circle")
+                    .attr("isInPath", d => d.data.isInPath)
+                    .attr("r", 10)
+                    .style("fill-opacity", 1);
 
-            nodeEnter
-                .append("text")
-                .style("fill-opacity", 1e-6)
-                .attr("x", getOffset)
-                .attr("dy", ".35em")
-                .classed("leftToRight", () => true)
-                .classed("childrenPresent", this.childrenPresent)
-                .text(d => d.data.name);
+                node.insert("text")
+                    .attr("x", getOffset)
+                    .attr("dy", ".35em")
+                    .classed("leftToRight", () => true)
+                    .classed("childrenPresent", this.childrenPresent)
+                    .text(d => d.data.name)
+                    .style("fill-opacity", 1);
+            },
 
-            return nodeEnter;
-        };
-
-        const setNodeUpdate = nodeEnter => {
-            // Transition nodes to their new position.
-            const nodeUpdate = nodeEnter.merge(nodeSelector).call(selector => {
-                selector.select("circle").attr("r", 10);
-                selector.select("text").style("fill-opacity", 1);
-                selector
+            update => {
+                // Transition nodes to their new position.
+                update
                     .transition()
                     .duration(this.animationDuration)
                     .attr("transform", d => `translate(${d.y},${d.x})`);
-            });
-        };
+            },
 
-        const setNodeExit = () => {
             // Transition exiting nodes to the parent's new position.
-            const nodeExit = nodeSelector.exit().call(selector => {
-                selector
-                    .transition()
+            exit => {
+                exit.transition()
                     .duration(this.animationDuration)
                     .attr("transform", d => {
                         return `translate(${d.parent.y},${d.parent.x})`;
                     })
-                    .remove()
-                    .select("circle")
-                    .attr("r", 1e-6)
-                    .select("text")
-                    .style("fill-opacity", 1e-6);
-            });
-
-            // nodeExit.select("circle").attr("r", 1e-6);
-            //  nodeExit.select("text").style("fill-opacity", 1e-6);
-        };
-
-        const nodeEnterSelector = setNodeEnter();
-        setNodeUpdate(nodeEnterSelector);
-        setNodeExit();
+                    .remove();
+            }
+        );
     }
 
     updateLinks(links, source) {
