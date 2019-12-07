@@ -192,46 +192,45 @@ class collapsibleTreeCtrl {
 
     updateLinks(links, source) {
         // Update the links…
-        const link = this.svgContainer.selectAll("path.link").data(links, d => {
-            return d.id;
-        });
-
-        const linkEnter = link
-            .enter()
-            .insert("path", "g")
-            .attr("class", "link")
-            .style("stroke-width", "0")
-            .call(selector => {
-                selector.transition().attr("d", d => {
-                    const o = { x: d.parent.x, y: d.parent.y };
-                    return this.drawDiagonal({ source: o, target: o });
-                });
+        const linkSelector = this.svgContainer
+            .selectAll("path.link")
+            .data(links, d => {
+                return d.id;
             });
 
-        const linkUpdate = linkEnter.merge(link);
-        // Transition links to their new position.
-        linkUpdate
-            .classed("isInPath", d => d.data.isInPath)
-            .style("stroke-width", "1.5px")
-            .call(selector => {
-                selector
+        linkSelector.join(
+            enter => {
+                enter
+                    .insert("path", "g")
+                    .style("stroke-width", "1.5px")
                     .transition()
                     .duration(this.animationDuration)
                     .attr("d", d =>
                         this.drawDiagonal({ source: d, target: d.parent })
+                    )
+                    .attr("class", d =>
+                        d.data.isInPath ? "link isInPath" : "link"
                     );
-            });
+            },
 
-        // Transition exiting nodes to the parent's new position.
-        link.exit().call(selector =>
-            selector
-                .transition()
-                .duration(this.animationDuration)
-                .attr("d", d => {
-                    const o = { x: d.parent.x, y: d.parent.y };
-                    return this.drawDiagonal({ source: o, target: o });
-                })
-                .remove()
+            update => {
+                update
+                    .transition()
+                    .duration(this.animationDuration)
+                    .attr("class", d =>
+                        d.data.isInPath ? "link isInPath" : "link"
+                    );
+            },
+
+            exit => {
+                exit.transition()
+                    .duration(this.animationDuration)
+                    .attr("d", d => {
+                        const o = { x: d.parent.x, y: d.parent.y };
+                        return this.drawDiagonal({ source: o, target: o });
+                    })
+                    .remove();
+            }
         );
     }
 
