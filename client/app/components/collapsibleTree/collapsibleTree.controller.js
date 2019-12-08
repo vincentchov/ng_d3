@@ -120,6 +120,23 @@ class collapsibleTreeCtrl {
         return root;
     }
 
+    zoomToNode(d) {
+        const center = { x: this.dimensions.width / 2, y: this.dimensions.height / 2 };
+        this.svgContainer
+            .transition()
+            .delay(100)
+            .duration(this.animationDuration * 3)
+            .call(
+                this.zoom.transform,
+                () =>
+                    d3.zoomIdentity
+                        .translate(center.x, center.y)
+                        .scale(1)
+                        .translate(-d.y, -d.x),
+                d3.mouse(this.baseSvg.node())
+            );
+    }
+
     updateNodes(nodes, source) {
         const nodeSelector = this.svgContainer.selectAll("g").data(nodes, d => {
             if (d.id === undefined) {
@@ -150,6 +167,7 @@ class collapsibleTreeCtrl {
                             d._children = null;
                         }
                         this.updateTree(this.root);
+                        this.zoomToNode(d);
                     });
 
                 const nodeCircle = nodeContainer
