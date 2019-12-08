@@ -165,6 +165,28 @@ class collapsibleTreeCtrl {
             );
     }
 
+    nodeClicked(d) {
+        if (
+            (angular.isArray(d.children) && d.children.length) ||
+            (angular.isArray(d._children) && d._children.length)
+        ) {
+            if (d.children) {
+                d._children = d.children;
+                d.children = null;
+            } else {
+                d.children = d._children;
+                d._children = null;
+            }
+            this.updateTree(this.root);
+            this.zoomToNode(d);
+        } else {
+            this.downloadNodeChildren(d).then(() => {
+                this.updateTree(this.root);
+            });
+            this.zoomToNode(d);
+        }
+    }
+
     updateNodes(nodes, source) {
         const nodeSelector = this.svgContainer.selectAll("g").data(nodes, d => {
             if (d.id === undefined) {
@@ -186,27 +208,7 @@ class collapsibleTreeCtrl {
                     .attr("class", "node")
                     .attr("transform", parentPositionTranslation)
                     .style("visibility", "hidden")
-                    .on("click", d => {
-                        if (
-                            (angular.isArray(d.children) && d.children.length) ||
-                            (angular.isArray(d._children) && d._children.length)
-                        ) {
-                            if (d.children) {
-                                d._children = d.children;
-                                d.children = null;
-                            } else {
-                                d.children = d._children;
-                                d._children = null;
-                            }
-                            this.updateTree(this.root);
-                            this.zoomToNode(d);
-                        } else {
-                            this.downloadNodeChildren(d).then(() => {
-                                this.updateTree(this.root);
-                            });
-                            this.zoomToNode(d);
-                        }
-                    });
+                    .on("click", d => this.nodeClicked(d));
 
                 const nodeCircle = nodeContainer
                     .insert("circle")
