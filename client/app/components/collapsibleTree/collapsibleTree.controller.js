@@ -26,23 +26,23 @@ class collapsibleTreeCtrl {
 
     $onInit() {
         this.treeVisual = d3.tree().size([this.dimensions.height, this.dimensions.width]);
+        const fullHeight =
+            this.dimensions.height + this.dimensions.margin.top + this.dimensions.margin.bottom;
+        const fullWidth =
+            this.dimensions.width + this.dimensions.margin.right + this.dimensions.margin.left;
 
-        this.svgContainer = d3
+        this.baseSvg = d3
             .select(this.$element[0].querySelector(".visualization"))
             .append("svg")
-            .attr(
-                "width",
-                this.dimensions.width + this.dimensions.margin.right + this.dimensions.margin.left
-            )
-            .attr(
-                "height",
-                this.dimensions.height + this.dimensions.margin.top + this.dimensions.margin.bottom
-            )
+            .attr("width", fullWidth)
+            .attr("height", fullHeight)
             .call(
                 d3.zoom().on("zoom", () => {
                     this.svgContainer.attr("transform", d3.event.transform);
                 })
-            )
+            );
+
+        this.svgContainer = this.baseSvg
             .append("g")
             .attr(
                 "transform",
