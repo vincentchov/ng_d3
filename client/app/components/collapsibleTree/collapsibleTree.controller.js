@@ -129,7 +129,7 @@ class collapsibleTreeCtrl {
             return d.id;
         });
 
-        const getOffset = d => (this.childrenPresent(d) ? -13 : 13);
+        const getOffset = d => (this.isNodeExpanded(d) ? -13 : 13);
         const parentPositionTranslation = d =>
             d.parent ? `translate(${d.parent.y},${d.parent.x})` : `translate(${d.y},${d.x})`;
         const newPositionTranslation = d => `translate(${d.y},${d.x})`;
@@ -198,9 +198,11 @@ class collapsibleTreeCtrl {
 
                 nodeCircle.classed("isInPath", d => d.data.isInPath);
 
-                nodeText.attr("class", d =>
-                    true && this.isNodeExpanded(d) ? "leftToRight expanded" : "leftToRight"
-                );
+                nodeText
+                    .attr("x", getOffset)
+                    .attr("class", d =>
+                        true && this.isNodeExpanded(d) ? "leftToRight expanded" : "leftToRight"
+                    );
             },
 
             // Transition exiting nodes to the parent's new position.
