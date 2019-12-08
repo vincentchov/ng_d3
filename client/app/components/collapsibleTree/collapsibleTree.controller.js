@@ -78,6 +78,34 @@ class collapsibleTreeCtrl {
         }
     }
 
+    async downloadNodeChildren(d) {
+        const data = await new Promise((resolve, reject) => {
+            if (d._noChildren) {
+                return;
+            }
+            if (d.data.name === "Son of A") {
+                setTimeout(() => {
+                    resolve([
+                        {
+                            name: "Grandson of A",
+                            parent: "Son of A",
+                            children: []
+                        }
+                    ]);
+                }, Math.random() * 3000);
+            }
+        });
+
+        if (angular.isArray(data) && data.length) {
+            d.data.children = data;
+            this.root = d3.hierarchy(this.root.data, d => d.children);
+        } else {
+            d._noChildren = true;
+        }
+
+        return d;
+    }
+
     setColorPath() {
         if (!this.path.length) {
             throw new Error("Path must be non-empty");
@@ -159,15 +187,25 @@ class collapsibleTreeCtrl {
                     .attr("transform", parentPositionTranslation)
                     .style("visibility", "hidden")
                     .on("click", d => {
-                        if (d.children) {
-                            d._children = d.children;
-                            d.children = null;
+                        if (
+                            (angular.isArray(d.children) && d.children.length) ||
+                            (angular.isArray(d._children) && d._children.length)
+                        ) {
+                            if (d.children) {
+                                d._children = d.children;
+                                d.children = null;
+                            } else {
+                                d.children = d._children;
+                                d._children = null;
+                            }
+                            this.updateTree(this.root);
+                            this.zoomToNode(d);
                         } else {
-                            d.children = d._children;
-                            d._children = null;
+                            this.downloadNodeChildren(d).then(() => {
+                                this.updateTree(this.root);
+                            });
+                            this.zoomToNode(d);
                         }
-                        this.updateTree(this.root);
-                        this.zoomToNode(d);
                     });
 
                 const nodeCircle = nodeContainer
