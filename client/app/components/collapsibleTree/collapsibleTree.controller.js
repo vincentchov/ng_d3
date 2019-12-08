@@ -21,6 +21,7 @@ class collapsibleTreeCtrl {
         this.newestNodeId = 0;
         this.animationDuration = 750;
         this.childrenPresent = d => Boolean(d.children || d._children);
+        this.isNodeExpanded = d => angular.isArray(d.children) && d.children.length;
     }
 
     $onInit() {
@@ -161,8 +162,9 @@ class collapsibleTreeCtrl {
                     .insert("text")
                     .attr("x", getOffset)
                     .attr("dy", ".35em")
-                    .classed("leftToRight", () => true)
-                    .classed("expanded", this.childrenPresent)
+                    .attr("class", d =>
+                        true && this.isNodeExpanded(d) ? "leftToRight expanded" : "leftToRight"
+                    )
                     .text(d => d.data.name)
                     .style("fill-opacity", 0);
 
@@ -187,12 +189,18 @@ class collapsibleTreeCtrl {
                 // Transition nodes to their new position.
                 const nodeContainer = update;
                 const nodeCircle = nodeContainer.select("circle");
+                const nodeText = nodeContainer.select("text");
+
                 nodeContainer
                     .transition()
                     .duration(this.animationDuration)
                     .attr("transform", newPositionTranslation);
 
                 nodeCircle.classed("isInPath", d => d.data.isInPath);
+
+                nodeText.attr("class", d =>
+                    true && this.isNodeExpanded(d) ? "leftToRight expanded" : "leftToRight"
+                );
             },
 
             // Transition exiting nodes to the parent's new position.
