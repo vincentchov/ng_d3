@@ -31,16 +31,16 @@ class collapsibleTreeCtrl {
         const fullWidth =
             this.dimensions.width + this.dimensions.margin.right + this.dimensions.margin.left;
 
+        this.zoom = d3.zoom().on("zoom", () => {
+            this.svgContainer.attr("transform", d3.event.transform);
+        });
+
         this.baseSvg = d3
             .select(this.$element[0].querySelector(".visualization"))
             .append("svg")
             .attr("width", fullWidth)
             .attr("height", fullHeight)
-            .call(
-                d3.zoom().on("zoom", () => {
-                    this.svgContainer.attr("transform", d3.event.transform);
-                })
-            );
+            .call(this.zoom);
 
         this.svgContainer = this.baseSvg
             .append("g")
